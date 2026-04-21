@@ -1,0 +1,103 @@
+# Tasks — admin-product-crud
+
+## Task List
+
+- [ ] 1. Estructura base y configuración
+  - [ ] 1.1 Crear directorio `uploads/productos/` con `.gitkeep`
+  - [ ] 1.2 Verificar que `includes/conexion.php` existe y es accesible desde el módulo admin
+
+- [ ] 2. Endpoint de búsqueda AJAX (`admin/api/buscar_productos.php`)
+  - [ ] 2.1 Implementar endpoint GET que acepta `q`, `categoria` y `pagina`
+  - [ ] 2.2 Query con prepared statements: JOIN tallas para stock_total, filtros LIKE y categoría
+  - [ ] 2.3 Retornar JSON `{productos, total, paginas}` con `Content-Type: application/json`
+  - [ ] 2.4 Verificar sesión activa al inicio; retornar HTTP 401 si no hay sesión
+  - [ ] 2.5 Manejar parámetros inválidos con HTTP 400
+
+- [ ] 3. Listado de productos (`admin/productos.php`)
+  - [ ] 3.1 Verificar sesión activa; redirigir a `login.html` si no existe
+  - [ ] 3.2 Implementar paginación server-side (20 por página) con parámetros GET
+  - [ ] 3.3 Renderizar tabla con columnas: imagen, nombre, categoría, precio, stock total, acciones
+  - [ ] 3.4 Implementar filtro por categoría via GET
+  - [ ] 3.5 Implementar búsqueda en tiempo real con debounce (300ms) que consume `api/buscar_productos.php`
+  - [ ] 3.6 Botón "Agregar Producto" que navega a `agregar_producto.php`
+  - [ ] 3.7 Botón Editar por fila → link a `editar_producto.php?id=X`
+  - [ ] 3.8 Botón Eliminar por fila → form POST a `eliminar_producto.php` con confirmación JS (`confirm()`)
+  - [ ] 3.9 Mostrar mensajes de éxito/error según parámetro GET (`?success=1`, `?error=...`)
+  - [ ] 3.10 Aplicar estilos de `admin/css/admin.css`; responsive en 768px
+
+- [ ] 4. Formulario de creación (`admin/agregar_producto.php`)
+  - [ ] 4.1 Verificar sesión activa; redirigir a `login.html` si no existe
+  - [ ] 4.2 Renderizar formulario con campos: nombre, descripcion (Quill), precio, categoria, imagen_principal
+  - [ ] 4.3 Integrar Quill.js via CDN con tema snow; sincronizar HTML al hidden input antes del submit
+  - [ ] 4.4 Implementar Stock_Table: tabla dinámica con botones JS para agregar/eliminar filas de talla+stock
+  - [ ] 4.5 Implementar Color_Picker: lista dinámica con `input[type=color]` + nombre + stock; botones agregar/eliminar
+  - [ ] 4.6 Implementar zona de drag-and-drop para imagen_principal con HTML5 File API (sin librerías)
+  - [ ] 4.7 Implementar zona de drag-and-drop para galería de imágenes adicionales con preview
+  - [ ] 4.8 Validación client-side: campos requeridos, precio > 0, al menos una talla
+  - [ ] 4.9 Procesamiento POST server-side:
+    - [ ] 4.9.1 Validar todos los campos server-side
+    - [ ] 4.9.2 Validar tipo MIME y tamaño (≤ 5MB) de imágenes subidas
+    - [ ] 4.9.3 Subir imagen_principal a `uploads/productos/uniqid().ext`
+    - [ ] 4.9.4 `INSERT INTO productos` con prepared statement
+    - [ ] 4.9.5 `INSERT INTO tallas` para cada fila de Stock_Table
+    - [ ] 4.9.6 `INSERT INTO colores` para cada color del Color_Picker
+    - [ ] 4.9.7 Subir imágenes de galería + `INSERT INTO imagenes_producto` con orden
+    - [ ] 4.9.8 Redirect a `productos.php?success=1` tras éxito
+  - [ ] 4.10 Aplicar estilos de `admin/css/admin.css`
+
+- [ ] 5. Formulario de edición (`admin/editar_producto.php`)
+  - [ ] 5.1 Verificar sesión activa; redirigir a `login.html` si no existe
+  - [ ] 5.2 Cargar datos del producto por `?id=X` con prepared statement; mostrar error si no existe
+  - [ ] 5.3 Precargar todos los campos del formulario con datos existentes (mismo layout que agregar)
+  - [ ] 5.4 Precargar Quill.js con el HTML de descripción existente
+  - [ ] 5.5 Precargar Stock_Table con las tallas existentes del producto
+  - [ ] 5.6 Precargar Color_Picker con los colores existentes del producto
+  - [ ] 5.7 Mostrar galería de imágenes existentes con opción de eliminar cada una
+  - [ ] 5.8 Procesamiento POST server-side:
+    - [ ] 5.8.1 Validar campos y que el producto existe
+    - [ ] 5.8.2 `UPDATE productos SET ...` con prepared statement
+    - [ ] 5.8.3 Si se sube nueva imagen_principal: subir + actualizar campo + eliminar archivo anterior
+    - [ ] 5.8.4 Sincronizar tallas: DELETE existentes + INSERT nuevas
+    - [ ] 5.8.5 Sincronizar colores: DELETE existentes + INSERT nuevos
+    - [ ] 5.8.6 Procesar imágenes de galería: eliminar removidas (archivo + DB) + insertar nuevas
+    - [ ] 5.8.7 Redirect a `productos.php?success=2` tras éxito
+  - [ ] 5.9 Aplicar estilos de `admin/css/admin.css`
+
+- [ ] 6. Endpoint de eliminación (`admin/eliminar_producto.php`)
+  - [ ] 6.1 Verificar sesión activa; redirigir a `login.html` si no existe
+  - [ ] 6.2 Rechazar GET → redirect a `productos.php`
+  - [ ] 6.3 Validar `producto_id` como entero positivo
+  - [ ] 6.4 Obtener rutas de imagen_principal e imágenes de galería antes de eliminar
+  - [ ] 6.5 `DELETE FROM productos WHERE id = ?` (CASCADE elimina tallas, colores, imagenes_producto)
+  - [ ] 6.6 Eliminar archivos físicos de `uploads/productos/`
+  - [ ] 6.7 Redirect a `productos.php?success=3` tras éxito
+
+- [ ] 7. Tests
+  - [ ] 7.1 Unit tests (PHPUnit):
+    - [ ] 7.1.1 Crear producto válido → verificar registros en DB y archivo subido
+    - [ ] 7.1.2 Crear producto sin nombre → rechazado, sin INSERT
+    - [ ] 7.1.3 Crear producto con precio 0 → rechazado
+    - [ ] 7.1.4 Upload con tipo MIME inválido → rechazado
+    - [ ] 7.1.5 Editar producto existente → UPDATE correcto
+    - [ ] 7.1.6 Editar producto con id inexistente → mensaje de error
+    - [ ] 7.1.7 Eliminar producto → cascada + archivos físicos eliminados
+    - [ ] 7.1.8 GET a eliminar_producto.php → redirect sin operación
+    - [ ] 7.1.9 Búsqueda con q vacío → retorna todos paginados
+    - [ ] 7.1.10 Búsqueda con categoría + texto → solo coincidencias
+  - [ ] 7.2 Property-based tests (PHPUnit + DataProviders / fast-check para JS):
+    - [ ] 7.2.1 P1: Requests sin sesión a todos los endpoints → redirect a login
+      - `// Feature: admin-product-crud, Property 1: Protección de rutas sin sesión`
+    - [ ] 7.2.2 P2: Combinaciones de campos inválidos → rechazo sin INSERT
+      - `// Feature: admin-product-crud, Property 2: Validación de campos requeridos`
+    - [ ] 7.2.3 P3: Crear producto con N tallas y M colores aleatorios → round-trip exacto
+      - `// Feature: admin-product-crud, Property 3: Round-trip de variantes`
+    - [ ] 7.2.4 P4: Queries y catálogos aleatorios → todos los resultados cumplen filtros
+      - `// Feature: admin-product-crud, Property 4: Búsqueda retorna subconjunto correcto`
+    - [ ] 7.2.5 P5: N uploads simultáneos → nombres uniqid() sin colisiones
+      - `// Feature: admin-product-crud, Property 5: Unicidad de nombres de archivo`
+    - [ ] 7.2.6 P6: Eliminar producto con variantes e imágenes → ausencia total en DB y filesystem
+      - `// Feature: admin-product-crud, Property 6: Eliminación completa de producto`
+    - [ ] 7.2.7 P7: N productos con filtros → distribución correcta en páginas
+      - `// Feature: admin-product-crud, Property 7: Paginación consistente`
+    - [ ] 7.2.8 P8: Editar producto X → productos con id ≠ X inalterados
+      - `// Feature: admin-product-crud, Property 8: Edición no afecta otros productos`
