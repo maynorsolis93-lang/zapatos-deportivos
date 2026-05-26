@@ -10,6 +10,7 @@
 
 const DATA_URL = "/data/store.json";
 const WHATSAPP_NUMBER = "50582325819";
+const PLACEHOLDER_IMAGE = "/imagenes/placeholder.svg";
 
 /** Estado global minimo para evitar variables sueltas */
 const state = {
@@ -22,6 +23,14 @@ const state = {
 /** Escapa rutas con caracteres especiales */
 function assetPath(path) {
   return encodeURI(path);
+}
+
+/** Devuelve una URL de imagen segura para mostrar placeholders si faltan assets */
+function getSafeImagePath(path) {
+  if (!path) return PLACEHOLDER_IMAGE;
+  // Asegurar que la ruta comience con / para ser absoluta
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return assetPath(normalizedPath);
 }
 
 /**
@@ -62,7 +71,7 @@ function buildHero() {
   state.heroSlides.forEach((slide, idx) => {
     const item = document.createElement("div");
     item.className = `hero__slide${idx === 0 ? " hero__slide--active" : ""}`;
-    item.style.backgroundImage = `url(${assetPath(slide.img)})`;
+    item.style.backgroundImage = `url(${getSafeImagePath(slide.img)})`;
     item.innerHTML = `
       <div class="hero__overlay"></div>
       <div class="hero__content container">
@@ -76,6 +85,12 @@ function buildHero() {
       </div>
     `;
     slidesContainer.appendChild(item);
+
+    const bgProbe = new Image();
+    bgProbe.onerror = () => {
+      item.style.backgroundImage = `url(${PLACEHOLDER_IMAGE})`;
+    };
+    bgProbe.src = getSafeImagePath(slide.img);
 
     const dot = document.createElement("button");
     dot.className = `hero__dot${idx === 0 ? " hero__dot--active" : ""}`;
@@ -176,6 +191,71 @@ function buildFilters() {
 }
 
 /** Renderiza tarjetas de productos segun filtros activos */
+function getProductBadge(product) {
+  if (product.badge === "No disponible") return product.badge;
+  if (
+    product.persona === "caballeros" &&
+    product.tipo === "casuales" &&
+    product.badge === "Nuevo"
+  ) {
+    return "Coleccion 2026";
+  }
+  return product.badge;
+}
+
+function buildProductCard(product) {
+  const badgeLabel = getProductBadge(product);
+  const badgeClass =
+    badgeLabel === "No disponible"
+      ? "product-card__badge product-card__badge--unavailable"
+      : badgeLabel === "Coleccion 2026"
+      ? "product-card__badge product-card__badge--collection"
+      : "product-card__badge";
+
+  const badge = badgeLabel ? `<span class="${badgeClass}">${badgeLabel}</span>` : "";
+
+  const personaLabel =
+    {
+      ninos: "Ninos y Ninas",
+      adolescentes: "Adolescentes",
+      damas: "Damas",
+      caballeros: "Caballeros",
+    }[product.persona] || product.persona;
+
+  const footer =
+    product.badge === "No disponible"
+      ? '<div class="product-card__footer"><span class="product-card__soon">Disponible pronto</span></div>'
+      : `<div class="product-card__footer"><button class="product-card__view" data-action="details" data-id="${
+          product.id
+        }">Ver detalles</button><a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+          `Hola, me interesa: ${product.name}`
+        )}" class="btn btn--whatsapp btn--sm product-card__cta" target="_blank" rel="noreferrer">Consultar por WhatsApp</a></div>`;
+
+  const priceHtml = product.price ? `<p class="product-card__price">${product.price}</p>` : "";
+  const sizesHtml = product.sizes ? `<p class="product-card__sizes">Tallas: ${product.sizes}</p>` : "";
+
+  return `
+    <article class="product-card" data-id="${product.id}">
+      <div class="product-card__img-wrap" data-action="details" data-id="${product.id}">
+        ${badge}
+        <img src="${getSafeImagePath(product.img)}" alt="${product.name}" loading="lazy">
+      </div>
+      <div class="product-card__body">
+        <span class="product-card__category">${personaLabel} &mdash; ${product.tipo}</span>
+        <h3 class="product-card__name">${product.name}</h3>
+        <p class="product-card__desc">${product.desc}</p>
+        ${priceHtml}
+        ${sizesHtml}
+        ${footer}
+      </div>
+    </article>
+  `;
+}
+//esta funcion se encarga de renderizar los productos en la pagina, segun los filtros seleccionados por el usuario.
+//  Si no hay productos que coincidan con los filtros, muestra un mensaje indicando que no hay productos disponibles 
+// en esa categoria. Tambien agrega eventos para mostrar el modal de detalles al hacer click en un producto. Ademas,
+//  inicializa el efecto de revelado al hacer scroll.
+// ejemplo de uso: renderProducts("caballeros", "deportivos") mostraria solo los productos para caballeros deportivos.
 function renderProducts(persona, tipo) {
   const grid = document.querySelector(".products-grid");
   if (!grid) return;
@@ -193,58 +273,21 @@ function renderProducts(persona, tipo) {
     return;
   }
 
-  list.forEach((product) => {
-    const card = document.createElement("article");
-    card.className = "product-card";
-    card.dataset.id = String(product.id);
+  grid.innerHTML = list.map((product) => buildProductCard(product)).join("");
 
-    const badge = product.badge
-      ? `<span class="product-card__badge${
-          product.badge === "No disponible" ? " product-card__badge--unavailable" : ""
-        }">${product.badge}</span>`
-      : "";
-
-    const personaLabel =
-      {
-        ninos: "Ninos y Ninas",
-        adolescentes: "Adolescentes",
-        damas: "Damas",
-        caballeros: "Caballeros",
-      }[product.persona] || product.persona;
-
-    const footer =
-      product.badge === "No disponible"
-        ? '<div class="product-card__footer"><span class="product-card__soon">Disponible pronto</span></div>'
-        : `<div class="product-card__footer"><span class="product-card__view">Ver detalle &rarr;</span><a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-            `Hola, me interesa: ${product.name}`
-          )}" class="btn btn--whatsapp btn--sm" target="_blank" rel="noreferrer">WhatsApp</a></div>`;
-
-    const priceHtml = product.price ? `<p class="product-card__price">${product.price}</p>` : "";
-    const sizesHtml = product.sizes ? `<p class="product-card__sizes">Tallas: ${product.sizes}</p>` : "";
-
-    card.innerHTML = `
-      <div class="product-card__img-wrap">
-        ${badge}
-        <img src="${assetPath(product.img)}" alt="${product.name}" loading="lazy">
-      </div>
-      <div class="product-card__body">
-        <span class="product-card__category">${personaLabel} &mdash; ${product.tipo}</span>
-        <h3 class="product-card__name">${product.name}</h3>
-        <p class="product-card__desc">${product.desc}</p>
-        ${priceHtml}
-        ${sizesHtml}
-        ${footer}
-      </div>
-    `;
-
-    const imageWrap = card.querySelector(".product-card__img-wrap");
-    if (imageWrap) imageWrap.addEventListener("click", () => openModal(product.id));
-
-    const viewBtn = card.querySelector(".product-card__view");
-    if (viewBtn) viewBtn.addEventListener("click", () => openModal(product.id));
-
-    grid.appendChild(card);
+  grid.querySelectorAll("img").forEach((image) => {
+    image.addEventListener("error", () => {
+      image.src = PLACEHOLDER_IMAGE;
+    });
   });
+
+  grid.onclick = (event) => {
+    const trigger = event.target.closest("[data-action='details']");
+    if (!trigger) return;
+    const id = Number(trigger.dataset.id);
+    if (Number.isNaN(id)) return;
+    openModal(id);
+  };
 
   initScrollReveal();
 }
@@ -262,7 +305,7 @@ function openModal(id) {
   const sizes = product.sizes ? `<p class="modal__sizes"><strong>Tallas:</strong> ${product.sizes}</p>` : "";
 
   body.innerHTML = `
-    <img src="${assetPath(product.img)}" alt="${product.name}">
+    <img src="${getSafeImagePath(product.img)}" alt="${product.name}">
     <div class="modal__info">
       <h2>${product.name}</h2>
       <p>${product.desc}</p>
@@ -276,6 +319,13 @@ function openModal(id) {
 
   modal.hidden = false;
   document.body.style.overflow = "hidden";
+
+  const modalImage = body.querySelector("img");
+  if (modalImage) {
+    modalImage.addEventListener("error", () => {
+      modalImage.src = PLACEHOLDER_IMAGE;
+    });
+  }
 }
 
 function closeModal() {
@@ -334,10 +384,10 @@ function populateModelSelect() {
 
   // Agrupar por categoría
   const groups = {
-    caballeros: { deporticos: [], casuales: [], formales: [] },
-    damas: { deporticos: [], casuales: [], formales: [] },
-    ninos: { deporticos: [], casuales: [], formales: [] },
-    adolescentes: { deporticos: [], casuales: [], formales: [] },
+    caballeros: { deportivos: [], casuales: [], formales: [] },
+    damas: { deportivos: [], casuales: [], formales: [] },
+    ninos: { deportivos: [], casuales: [], formales: [] },
+    adolescentes: { deportivos: [], casuales: [], formales: [] },
   };
 
   availableProducts.forEach((p) => {
@@ -355,7 +405,7 @@ function populateModelSelect() {
     damas: "Damas",
     ninos: "Niños",
     adolescentes: "Adolescentes",
-    deporticos: "Deportivos",
+    deportivos: "Deportivos",
     casuales: "Casuales",
     formales: "Formales",
     otros: "Otros",
@@ -395,9 +445,12 @@ function initModelPreview() {
   select.addEventListener("change", () => {
     const option = select.options[select.selectedIndex];
     if (option && option.dataset.img) {
-      img.src = assetPath(option.dataset.img);
+      img.src = getSafeImagePath(option.dataset.img);
       img.style.display = "block";
       img.alt = option.dataset.name || "Vista previa";
+      img.onerror = () => {
+        img.src = PLACEHOLDER_IMAGE;
+      };
     } else {
       img.style.display = "none";
       img.src = "";
@@ -423,15 +476,32 @@ function initOrderForm() {
     const modelSelect = document.getElementById("order-model");
     const modelId = modelSelect?.value;
     const size = document.getElementById("order-size")?.value;
-    const qty = document.getElementById("order-qty")?.value;
+    const location = document.getElementById("order-location")?.value;
+    const qty = Number(document.getElementById("order-qty")?.value || 0);
     const notes = document.getElementById("order-notes")?.value.trim();
 
     // Obtener datos del producto seleccionado
     const product = state.products.find((p) => String(p.id) === String(modelId));
 
-    if (!name || !phone || !modelId || !size) {
+    if (!name || !phone || !modelId || !size || !location) {
       if (success) {
         success.textContent = "Por favor completa los campos obligatorios.";
+        success.style.color = "#e94560";
+      }
+      return;
+    }
+
+    if (!/^[+\d\s-]{8,20}$/.test(phone)) {
+      if (success) {
+        success.textContent = "Ingresa un numero de telefono valido.";
+        success.style.color = "#e94560";
+      }
+      return;
+    }
+
+    if (!Number.isInteger(qty) || qty < 1 || qty > 20) {
+      if (success) {
+        success.textContent = "La cantidad debe estar entre 1 y 20 pares.";
         success.style.color = "#e94560";
       }
       return;
@@ -446,6 +516,7 @@ function initOrderForm() {
       `Telefono: ${phone}\n` +
       `Modelo: ${modelName}\n` +
       `Talla: ${size}\n` +
+      `Ciudad de envio: ${location}\n` +
       `Cantidad: ${qty} par(es)` +
       (modelImg ? `\nFoto del modelo: ${window.location.origin}/${modelImg}` : "") +
       (notes ? `\nNotas: ${notes}` : "") +
