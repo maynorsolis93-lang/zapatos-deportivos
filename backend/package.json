@@ -4,11 +4,16 @@
   "description": "Backend, DB and inventory setup for kiro-shoes",
   "main": "src/index.js",
   "scripts": {
+    "start": "node index.js",
+     "maynor": "node index.js",
+    "dev": "nodemon index.js",
     "db:migrate": "prisma migrate dev --name init_inventory",
     "db:generate": "prisma generate",
     "db:seed": "node prisma/seed.js",
     "db:import": "node scripts/import-store-json.js",
-    "db:setup": "npm run db:migrate && npm run db:generate && npm run db:seed && npm run db:import"
+    "db:setup": "npm run db:migrate && npm run db:generate && npm run db:seed && npm run db:import",
+    "db:verify": "node scripts/verify-setup.js",
+    "db:reset": "prisma migrate reset --force"
   },
   "keywords": [
     "inventory",
@@ -19,9 +24,16 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@prisma/client": "^6.7.0"
+    "@prisma/client": "^6.7.0",
+    "axios": "^1.16.1",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
+    "nodemon": "^3.1.14",
     "prisma": "^6.7.0"
   }
 }

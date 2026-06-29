@@ -7,8 +7,6 @@ dist/
 # Archivos de entorno
 .env
 .env.*
-!.env.example
-!.env.production.example
 
 # Archivos del sistema
 .DS_Store

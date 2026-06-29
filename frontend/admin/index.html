@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin - Calzados Hermanos Solis</title>
+  <link rel="icon" type="image/png" href="../imagenes/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-container">
+      <div class="login-header">
+        <img src="../imagenes/favicon.png" alt="Logo" class="login-logo">
+        <h1>Panel Administrativo</h1>
+        <p>Calzados Hermanos Solis</p>
+      </div>
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <label for="login-email">Correo electrónico</label>
+          <input type="email" id="login-email" required placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          <span class="btn-text">Iniciar Sesión</span>
+          <span class="btn-loader" style="display: none;">⏳</span>
+        </button>
+        <div id="login-error" class="alert alert-error" style="display: none;"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="admin-dashboard" class="admin-dashboard" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="../imagenes/favicon.png" alt="Logo" class="sidebar-logo">
+        <h2>Admin Panel</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Dashboard</span>
+        </a>
+        <a href="#products" class="nav-item" data-view="products">
+          <span class="nav-icon">👟</span>
+          <span class="nav-text">Productos</span>
+        </a>
+        <a href="#inventory" class="nav-item" data-view="inventory">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Inventario</span>
+        </a>
+        <a href="#orders" class="nav-item" data-view="orders">
+          <span class="nav-icon">🛒</span>
+          <span class="nav-text">Pedidos</span>
+        </a>
+        <a href="#alerts" class="nav-item" data-view="alerts">
+          <span class="nav-icon">⚠️</span>
+          <span class="nav-text">Alertas</span>
+          <span class="nav-badge" id="alerts-badge">0</span>
+        </a>
+        <a href="#catalog" class="nav-item" data-view="catalog">
+          <span class="nav-icon">🌐</span>
+          <span class="nav-text">Catálogo Público</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">👤</div>
+          <div class="user-details">
+            <div class="user-name" id="user-name">Admin</div>
+            <div class="user-email" id="user-email">admin@example.com</div>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn btn-ghost btn-sm">Cerrar Sesión</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="content-header">
+        <h1 id="page-title">Dashboard</h1>
+        <div class="header-actions">
+          <button class="btn btn-icon" id="refresh-btn" title="Actualizar">🔄</button>
+          <div class="user-menu">
+            <span id="header-user-name">Admin</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-body">
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="view active">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">👟</div>
+              <div class="stat-content">
+                <div class="stat-label">Total Productos</div>
+                <div class="stat-value" id="stat-products">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📦</div>
+              <div class="stat-content">
+                <div class="stat-label">Stock Total</div>
+                <div class="stat-value" id="stat-stock">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🛒</div>
+              <div class="stat-content">
+                <div class="stat-label">Pedidos Pendientes</div>
+                <div class="stat-value" id="stat-orders">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⚠️</div>
+              <div class="stat-content">
+                <div class="stat-label">Alertas de Stock</div>
+                <div class="stat-value" id="stat-alerts">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card">
+              <div class="card-header">
+                <h3>Productos con Stock Bajo</h3>
+              </div>
+              <div class="card-body">
+                <div id="low-stock-list" class="list-container"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Pedidos Recientes</h3>
+              </div>
+              <div class="card-body">
+                <div id="recent-orders-list" class="list-container"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products View -->
+        <div id="view-products" class="view">
+          <div class="view-header">
+            <div class="search-box">
+              <input type="text" id="products-search" placeholder="Buscar productos...">
+            </div>
+            <button class="btn btn-primary" id="add-product-btn">+ Nuevo Producto</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="products-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Imagen</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Audiencia</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Inventory View -->
+        <div id="view-inventory" class="view">
+          <div class="view-header">
+            <div class="filter-group">
+              <select id="inventory-filter-type">
+                <option value="">Todos los movimientos</option>
+                <option value="entry">Entradas</option>
+                <option value="exit">Salidas</option>
+                <option value="adjustment">Ajustes</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="export-inventory-btn">📥 Exportar</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="inventory-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Producto</th>
+                  <th>Talla</th>
+                  <th>Tipo</th>
+                  <th>Cantidad</th>
+                  <th>Razón</th>
+                  <th>Usuario</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Orders View -->
+        <div id="view-orders" class="view">
+          <div class="view-header">
+            <div class="filter-group">
+              <select id="orders-filter-status">
+                <option value="">Todos los estados</option>
+                <option value="pending">Pendiente</option>
+                <option value="confirmed">Confirmado</option>
+                <option value="shipped">Enviado</option>
+                <option value="delivered">Entregado</option>
+                <option value="cancelled">Cancelado</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="create-order-btn">+ Nuevo Pedido</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="orders-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Teléfono</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="orders-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Alerts View -->
+        <div id="view-alerts" class="view">
+          <div class="alerts-container">
+            <div class="card">
+              <div class="card-header">
+                <h3>⚠️ Stock Bajo (≤ 5 unidades)</h3>
+              </div>
+              <div class="card-body">
+                <div id="low-stock-alerts" class="alerts-list"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>🚫 Sin Stock</h3>
+              </div>
+              <div class="card-body">
+                <div id="out-of-stock-alerts" class="alerts-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Catalog View -->
+        <div id="view-catalog" class="view">
+          <div class="view-header">
+            <div class="filter-group">
+              <select id="catalog-filter-persona">
+                <option value="">Todas las audiencias</option>
+                <option value="ninos">Niños</option>
+                <option value="adolescentes">Adolescentes</option>
+                <option value="damas">Damas</option>
+                <option value="caballeros">Caballeros</option>
+              </select>
+              <select id="catalog-filter-tipo">
+                <option value="">Todos los tipos</option>
+                <option value="deportivos">Deportivos</option>
+                <option value="casuales">Casuales</option>
+                <option value="formales">Formales</option>
+              </select>
+            </div>
+            <button class="btn btn-secondary" id="preview-catalog-btn">👁️ Vista Previa</button>
+          </div>
+          <div class="catalog-grid" id="catalog-grid"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="modal-overlay" class="modal-overlay" style="display: none;">
+    <div class="modal" id="product-modal">
+      <div class="modal-header">
+        <h2 id="product-modal-title">Nuevo Producto</h2>
+        <button class="modal-close" data-modal="product-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="product-name">Nombre *</label>
+              <input type="text" id="product-name" required>
+            </div>
+            <div class="form-group">
+              <label for="product-sku">SKU</label>
+              <input type="text" id="product-sku">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="product-description">Descripción</label>
+            <textarea id="product-description" rows="3"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="product-category">Categoría *</label>
+              <select id="product-category" required></select>
+            </div>
+            <div class="form-group">
+              <label for="product-audience">Audiencia *</label>
+              <select id="product-audience" required></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="product-price">Precio Base *</label>
+              <input type="number" id="product-price" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="product-badge">Badge</label>
+              <input type="text" id="product-badge" placeholder="Nuevo, Oferta, etc.">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="product-image">ID de Imagen o Ruta</label>
+            <input type="text" id="product-image" placeholder="Ej: 3 (para 3.jpeg) o imagenes/productos/3.jpeg">
+            <p class="form-hint">💡 Solo escribe el número de tu foto (ej: 3) y el sistema generará automáticamente: imagenes/productos/3.jpeg</p>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" data-modal="product-modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar Producto</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="order-modal">
+      <div class="modal-header">
+        <h2 id="order-modal-title">Detalles del Pedido</h2>
+        <button class="modal-close" data-modal="order-modal">×</button>
+      </div>
+      <div class="modal-body" id="order-modal-body"></div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal" id="edit-product-modal">
+      <div class="modal-header">
+        <h2>Editar Producto</h2>
+        <button class="modal-close" data-modal="edit-product-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-product-form">
+          <input type="hidden" id="edit-product-id">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-product-name">Nombre *</label>
+              <input type="text" id="edit-product-name" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-product-sku">SKU</label>
+              <input type="text" id="edit-product-sku">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-product-description">Descripción</label>
+            <textarea id="edit-product-description" rows="3"></textarea>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-product-category">Categoría *</label>
+              <select id="edit-product-category" required>
+                <option value="">Seleccionar...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-product-audience">Audiencia *</label>
+              <select id="edit-product-audience" required>
+                <option value="">Seleccionar...</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-product-price">Precio Base (C$) *</label>
+              <input type="number" id="edit-product-price" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-product-badge">Badge</label>
+              <input type="text" id="edit-product-badge" placeholder="Nuevo, Oferta, Popular, etc.">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-product-active">
+              <input type="checkbox" id="edit-product-active">
+              Producto activo (visible en el catálogo)
+            </label>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" data-modal="edit-product-modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-text">Guardar Cambios</span>
+              <span class="btn-loader" style="display: none;">⏳</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- View Product Modal -->
+    <div class="modal" id="view-product-modal">
+      <div class="modal-header">
+        <h2>Detalles del Producto</h2>
+        <button class="modal-close" data-modal="view-product-modal">×</button>
+      </div>
+      <div class="modal-body" id="view-product-modal-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

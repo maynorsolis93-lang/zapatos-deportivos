@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kiro Shoes - Pruebas de API (Etapas 1-4)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1em;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: #f5f5f5;
+      padding: 15px 20px;
+      border-bottom: 2px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .section-header:hover {
+      background: #eeeeee;
+    }
+
+    .section-header h2 {
+      font-size: 1.3em;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-badge {
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+
+    .section-body {
+      padding: 20px;
+      display: none;
+    }
+
+    .section-body.active {
+      display: block;
+    }
+
+    .test-group {
+      margin-bottom: 20px;
+    }
+
+    .test-group h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+    }
+
+    .test-item {
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 10px;
+    }
+
+    .test-item h4 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 1em;
+    }
+
+    .test-item p {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95em;
+      font-weight: 600;
+      transition: all 0.3s;
+      margin-right: 10px;
+    }
+
+    .btn:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-success {
+      background: #10b981;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .result.success {
+      background: #d1fae5;
+      border: 1px solid #10b981;
+      color: #065f46;
+    }
+
+    .result.error {
+      background: #fee2e2;
+      border: 1px solid #ef4444;
+      color: #991b1b;
+    }
+
+    .result.info {
+      background: #dbeafe;
+      border: 1px solid #3b82f6;
+      color: #1e40af;
+    }
+
+    .credentials {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .credentials h3 {
+      color: #92400e;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .credentials p {
+      color: #78350f;
+      margin-bottom: 8px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .credentials strong {
+      color: #92400e;
+    }
+
+    .token-display {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 15px;
+      word-wrap: break-word;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+    }
+
+    .token-display.has-token {
+      background: #d1fae5;
+      border-color: #10b981;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-card h4 {
+      font-size: 2em;
+      margin-bottom: 5px;
+    }
+
+    .stat-card p {
+      opacity: 0.9;
+      font-size: 0.9em;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+
+    .input-group input,
+    .input-group select,
+    .input-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 0.95em;
+      font-family: inherit;
+    }
+
+    .input-group textarea {
+      resize: vertical;
+      min-height: 80px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .toggle-icon {
+      transition: transform 0.3s;
+    }
+
+    .toggle-icon.active {
+      transform: rotate(180deg);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 Kiro Shoes - Pruebas de API</h1>
+      <p>Validación de Etapas 1-4: Base de Datos, Autenticación, CRUD y Alertas</p>
+    </div>
+
+    <div class="content">
+      <!-- Credenciales -->
+      <div class="credentials">
+        <h3>🔐 Credenciales de Acceso</h3>
+        <p><strong>Email:</strong> maymesm@yahoo.com</p>
+        <p><strong>Password:</strong> Solislidia123</p>
+        <p><strong>API URL:</strong> http://localhost:3000</p>
+        <div class="token-display" id="tokenDisplay">
+          <strong>Token:</strong> No autenticado (haz login primero)
+        </div>
+      </div>
+
+      <!-- ETAPA 1: Base de Datos -->
+      <div class="section">
+        <div class="section-header" onclick="toggleSection('etapa1')">
+          <h2>
+            <span>📊</span>
+            Etapa 1: Base de Datos y Migraciones
+            <span class="section-badge">COMPLETADA</span>
+          </h2>
+          <span class="toggle-icon" id="toggle-etapa1">▼</span>
+        </div>
+        <div class="section-body" id="etapa1">
+          <div class="test-group">
+            <h3>Verificar Servidor</h3>
+            <div class="test-item">
+              <h4>1.1 Health Check</h4>
+              <p>Verifica que el servidor esté corriendo correctamente.</p>
+              <button class="btn" onclick="testHealth()">Probar</button>
+              <div id="result-health"></div>
+            </div>
+            <div class="test-item">
+              <h4>1.2 Info de la API</h4>
+              <p>Obtiene información general de la API y endpoints disponibles.</p>
+              <button class="btn" onclick="testApiInfo()">Probar</button>
+              <div id="result-api-info"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ETAPA 2: Autenticación -->
+      <div class="section">
+        <div class="section-header" onclick="toggleSection('etapa2')">
+          <h2>
+            <span>🔐</span>
+            Etapa 2: Autenticación y Protección de Rutas
+            <span class="section-badge">COMPLETADA</span>
+          </h2>
+          <span class="toggle-icon" id="toggle-etapa2">▼</span>
+        </div>
+        <div class="section-body" id="etapa2">
+          <div class="test-group">
+            <h3>Autenticación</h3>
+            <div class="test-item">
+              <h4>2.1 Login</h4>
+              <p>Autenticarse con las credenciales del administrador.</p>
+              <button class="btn btn-success" onclick="testLogin()">🔓 Hacer Login</button>
+              <div id="result-login"></div>
+            </div>
+            <div class="test-item">
+              <h4>2.2 Obtener Mi Información</h4>
+              <p>Obtiene la información del usuario autenticado.</p>
+              <button class="btn" onclick="testMe()" id="btn-me" disabled>Probar</button>
+              <div id="result-me"></div>
+            </div>
+          </div>
+
+          <div class="test-group">
+            <h3>Dashboard Admin</h3>
+            <div class="test-item">
+              <h4>2.3 Dashboard con Estadísticas</h4>
+              <p>Obtiene estadísticas generales del sistema.</p>
+              <button class="btn" onclick="testDashboard()" id="btn-dashboard" disabled>Probar</button>
+              <div id="result-dashboard"></div>
+            </div>
+            <div class="test-item">
+              <h4>2.4 Listar Productos (Admin)</h4>
+              <p>Lista todos los productos con paginación.</p>
+              <button class="btn" onclick="testAdminProducts()" id="btn-admin-products" disabled>Probar</button>
+              <div id="result-admin-products"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ETAPA 3: CRUD Productos -->
+      <div class="section">
+        <div class="section-header" onclick="toggleSection('etapa3')">
+          <h2>
+            <span>📦</span>
+            Etapa 3: CRUD de Productos y Stock
+            <span class="section-badge">COMPLETADA</span>
+          </h2>
+          <span class="toggle-icon" id="toggle-etapa3">▼</span>
+        </div>
+        <div class="section-body" id="etapa3">
+          <div class="test-group">
+            <h3>Gestión de Productos</h3>
+            <div class="test-item">
+              <h4>3.1 Crear Producto</h4>
+              <p>Crea un nuevo producto con variantes por talla.</p>
+              <div class="input-group">
+                <label>Nombre del Producto:</label>
+                <input type="text" id="product-name" value="Zapato Test Frontend" />
+              </div>
+              <div class="input-group">
+                <label>Precio Base:</label>
+                <input type="number" id="product-price" value="1200" />
+              </div>
+              <button class="btn btn-success" onclick="testCreateProduct()" id="btn-create-product" disabled>Crear Producto</button>
+              <div id="result-create-product"></div>
+            </div>
+            <div class="test-item">
+              <h4>3.2 Ajustar Stock</h4>
+              <p>Ajusta el stock de una variante específica.</p>
+              <div class="input-group">
+                <label>ID del Producto:</label>
+                <input type="number" id="adjust-product-id" placeholder="Ej: 1" />
+              </div>
+              <div class="input-group">
+                <label>ID de la Variante:</label>
+                <input type="number" id="adjust-variant-id" placeholder="Ej: 1" />
+              </div>
+              <div class="input-group">
+                <label>Cantidad (+ entrada, - salida):</label>
+                <input type="number" id="adjust-quantity" value="5" />
+              </div>
+              <div class="input-group">
+                <label>Razón:</label>
+                <select id="adjust-reason">
+                  <option value="compra">Compra</option>
+                  <option value="venta">Venta</option>
+                  <option value="ajuste">Ajuste</option>
+                  <option value="devolucion">Devolución</option>
+                  <option value="merma">Merma</option>
+                </select>
+              </div>
+              <button class="btn" onclick="testAdjustStock()" id="btn-adjust-stock" disabled>Ajustar Stock</button>
+              <div id="result-adjust-stock"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ETAPA 4: Inventario y Alertas -->
+      <div class="section">
+        <div class="section-header" onclick="toggleSection('etapa4')">
+          <h2>
+            <span>📊</span>
+            Etapa 4: Movimientos de Inventario y Alertas
+            <span class="section-badge">COMPLETADA</span>
+          </h2>
+          <span class="toggle-icon" id="toggle-etapa4">▼</span>
+        </div>
+        <div class="section-body" id="etapa4">
+          <div class="test-group">
+            <h3>Alertas de Stock</h3>
+            <div class="test-item">
+              <h4>4.1 Ver Todas las Alertas</h4>
+              <p>Obtiene alertas de stock bajo y productos agotados.</p>
+              <button class="btn btn-danger" onclick="testAlerts()" id="btn-alerts" disabled>🔔 Ver Alertas</button>
+              <div id="result-alerts"></div>
+            </div>
+            <div class="test-item">
+              <h4>4.2 Productos con Stock Bajo</h4>
+              <p>Lista productos con stock menor o igual al umbral.</p>
+              <div class="input-group">
+                <label>Umbral de Stock Bajo:</label>
+                <input type="number" id="low-stock-threshold" value="5" />
+              </div>
+              <button class="btn" onclick="testLowStock()" id="btn-low-stock" disabled>Ver Stock Bajo</button>
+              <div id="result-low-stock"></div>
+            </div>
+            <div class="test-item">
+              <h4>4.3 Productos Agotados</h4>
+              <p>Lista productos completamente sin stock.</p>
+              <button class="btn" onclick="testOutOfStock()" id="btn-out-of-stock" disabled>Ver Agotados</button>
+              <div id="result-out-of-stock"></div>
+            </div>
+          </div>
+
+          <div class="test-group">
+            <h3>Movimientos de Inventario</h3>
+            <div class="test-item">
+              <h4>4.4 Historial de Movimientos</h4>
+              <p>Obtiene el historial completo de movimientos de inventario.</p>
+              <div class="input-group">
+                <label>Límite de resultados:</label>
+                <input type="number" id="movements-limit" value="20" />
+              </div>
+              <button class="btn" onclick="testMovements()" id="btn-movements" disabled>Ver Movimientos</button>
+              <div id="result-movements"></div>
+            </div>
+            <div class="test-item">
+              <h4>4.5 Resumen de Movimientos</h4>
+              <p>Obtiene un resumen estadístico de los movimientos.</p>
+              <button class="btn" onclick="testMovementsSummary()" id="btn-movements-summary" disabled>Ver Resumen</button>
+              <div id="result-movements-summary"></div>
+            </div>
+            <div class="test-item">
+              <h4>4.6 Reporte de Inventario</h4>
+              <p>Genera un reporte completo del inventario actual.</p>
+              <button class="btn btn-success" onclick="testStockReport()" id="btn-stock-report" disabled>📊 Generar Reporte</button>
+              <div id="result-stock-report"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+    let accessToken = '';
+    let createdProductId = null;
+
+    // Toggle de secciones
+    function toggleSection(sectionId) {
+      const body = document.getElementById(sectionId);
+      const icon = document.getElementById(`toggle-${sectionId}`);
+      body.classList.toggle('active');
+      icon.classList.toggle('active');
+    }
+
+    // Función auxiliar para mostrar resultados
+    function showResult(elementId, data, type = 'success') {
+      const element = document.getElementById(elementId);
+      element.className = `result ${type}`;
+      element.textContent = JSON.stringify(data, null, 2);
+    }
+
+    // Función auxiliar para hacer requests
+    async function makeRequest(method, endpoint, body = null, useToken = false) {
+      const options = {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+
+      if (useToken && accessToken) {
+        options.headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      try {
+        const response = await fetch(`${API_URL}${endpoint}`, options);
+        const data = await response.json();
+        return { status: response.status, data, ok: response.ok };
+      } catch (error) {
+        return { status: 0, data: { error: error.message }, ok: false };
+      }
+    }
+
+    // Actualizar display del token
+    function updateTokenDisplay() {
+      const display = document.getElementById('tokenDisplay');
+      if (accessToken) {
+        display.className = 'token-display has-token';
+        display.innerHTML = `<strong>✓ Token Activo:</strong><br>${accessToken.substring(0, 50)}...`;
+        
+        // Habilitar botones que requieren autenticación
+        const protectedButtons = [
+          'btn-me', 'btn-dashboard', 'btn-admin-products',
+          'btn-create-product', 'btn-adjust-stock',
+          'btn-alerts', 'btn-low-stock', 'btn-out-of-stock',
+          'btn-movements', 'btn-movements-summary', 'btn-stock-report'
+        ];
+        protectedButtons.forEach(id => {
+          const btn = document.getElementById(id);
+          if (btn) btn.disabled = false;
+        });
+      } else {
+        display.className = 'token-display';
+        display.innerHTML = '<strong>Token:</strong> No autenticado (haz login primero)';
+      }
+    }
+
+    // ETAPA 1: Base de Datos
+    async function testHealth() {
+      const result = await makeRequest('GET', '/health');
+      showResult('result-health', result.data, result.ok ? 'success' : 'error');
+    }
+
+    async function testApiInfo() {
+      const result = await makeRequest('GET', '/');
+      showResult('result-api-info', result.data, result.ok ? 'success' : 'error');
+    }
+
+    // ETAPA 2: Autenticación
+    async function testLogin() {
+      const result = await makeRequest('POST', '/api/auth/login', {
+        email: 'maymesm@yahoo.com',
+        password: 'Solislidia123'
+      });
+
+      if (result.ok && result.data.accessToken) {
+        accessToken = result.data.accessToken;
+        updateTokenDisplay();
+        showResult('result-login', result.data, 'success');
+      } else {
+        showResult('result-login', result.data, 'error');
+      }
+    }
+
+    async function testMe() {
+      const result = await makeRequest('GET', '/api/auth/me', null, true);
+      showResult('result-me', result.data, result.ok ? 'success' : 'error');
+    }
+
+    async function testDashboard() {
+      const result = await makeRequest('GET', '/api/admin/dashboard', null, true);
+      showResult('result-dashboard', result.data, result.ok ? 'success' : 'error');
+    }
+
+    async function testAdminProducts() {
+      const result = await makeRequest('GET', '/api/admin/products?page=1&limit=10', null, true);
+      showResult('result-admin-products', result.data, result.ok ? 'success' : 'error');
+    }
+
+    // ETAPA 3: CRUD Productos
+    async function testCreateProduct() {
+      const name = document.getElementById('product-name').value;
+      const price = parseFloat(document.getElementById('product-price').value);
+
+      const result = await makeRequest('POST', '/api/products', {
+        name,
+        description: 'Producto de prueba creado desde el frontend',
+        basePrice: price,
+        badge: 'TEST',
+        categoryId: 1,
+        audienceId: 4,
+        variants: [
+          { sizeId: 16, stockQty: 10 },
+          { sizeId: 17, stockQty: 5 }
+        ]
+      }, true);
+
+      if (result.ok && result.data.product) {
+        createdProductId = result.data.product.id;
+        showResult('result-create-product', result.data, 'success');
+      } else {
+        showResult('result-create-product', result.data, 'error');
+      }
+    }
+
+    async function testAdjustStock() {
+      const productId = document.getElementById('adjust-product-id').value;
+      const variantId = document.getElementById('adjust-variant-id').value;
+      const quantity = parseInt(document.getElementById('adjust-quantity').value);
+      const reason = document.getElementById('adjust-reason').value;
+
+      if (!productId || !variantId) {
+        showResult('result-adjust-stock', { error: 'Debes ingresar el ID del producto y la variante' }, 'error');
+        return;
+      }
+
+      const result = await makeRequest('POST', `/api/products/${productId}/variants/${variantId}/stock`, {
+        quantity,
+        reason,
+        note: 'Ajuste desde frontend de pruebas'
+      }, true);
+
+      showResult('result-adjust-stock', result.data, result.ok ? 'success' : 'error');
+    }
+
+    // ETAPA 4: Inventario y Alertas
+    async function testAlerts() {
+      const result = await makeRequest('GET', '/api/inventory/alerts', null, true);
+      showResult('result-alerts', result.data, result.ok ? 'success' : 'error');
+    }
+
+    async function testLowStock() {
+      const threshold = document.getElementById('low-stock-threshold').value;
+      const result = await makeRequest('GET', `/api/inventory/low-stock?threshold=${threshold}`, null, true);
+      showResult('result-low-stock', result.data, result.ok ? 'success' : 'error');
+    }
+
+    async function testOutOfStock() {
+      const result = await makeRequest('GET', '/api/inventory/out-of-stock', null, true);
+      showResult('result-out-of-stock', result.data, result.ok ? 'success' : 'error');
+    }
+
+    async function testMovements() {
+      const limit = document.getElementById('movements-limit').value;
+      const result = await makeRequest('GET', `/api/inventory/movements?limit=${limit}`, null, true);
+      showResult('result-movements', result.data, result.ok ? 'success' : 'error');
+    }
+
+    async function testMovementsSummary() {
+      const today = new Date();
+      const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const result = await makeRequest('GET', `/api/inventory/movements/summary?startDate=${lastMonth.toISOString()}&endDate=${today.toISOString()}`, null, true);
+      showResult('result-movements-summary', result.data, result.ok ? 'success' : 'error');
+    }
+
+    async function testStockReport() {
+      const result = await makeRequest('GET', '/api/inventory/stock-report', null, true);
+      showResult('result-stock-report', result.data, result.ok ? 'success' : 'error');
+    }
+
+    // Abrir primera sección por defecto
+    window.addEventListener('DOMContentLoaded', () => {
+      toggleSection('etapa1');
+    });
+  </script>
+</body>
+</html>
